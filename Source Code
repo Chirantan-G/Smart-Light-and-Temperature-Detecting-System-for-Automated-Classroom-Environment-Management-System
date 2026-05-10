@@ -1,0 +1,63 @@
+#include "DHT.h"
+
+#define DHTPIN 7
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+
+int ldrPin = 3;
+int relayPin = 5;
+int classLight = 4;
+float tempThreshold = 30.0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ldrPin, INPUT);
+  pinMode(relayPin, OUTPUT);
+  pinMode(classLight, OUTPUT);
+  digitalWrite(relayPin, HIGH);
+  dht.begin();
+}
+
+int stableLDR() {
+  int count = 0;
+  for(int i = 0; i < 10; i++) {
+    count += digitalRead(ldrPin);
+    delay(10);
+  }
+  return count > 5 ? 1 : 0; // majority wins
+}
+
+void loop() {
+  float temp = dht.readTemperature();
+  float humidity = dht.readHumidity();
+  int ldrValue = stableLDR();
+
+  Serial.print("Temp: ");
+  Serial.print(temp);
+  Serial.println("°C");
+  Serial.print("Humidity: ");
+  Serial.print(humidity);
+  Serial.println("%");
+  Serial.print("LDR raw: ");
+  Serial.println(ldrValue);
+
+  if (ldrValue == 1) {
+    digitalWrite(classLight, HIGH);
+    Serial.println("Light: Dark - Lights ON");
+  } else {
+    digitalWrite(classLight, LOW);
+    Serial.println("Light: Bright - Lights OFF");
+  }
+
+  if (temp > tempThreshold) {
+    digitalWrite(relayPin, LOW);
+    Serial.println("Fan: ON");
+  } else {
+    digitalWrite(relayPin, HIGH);
+    Serial.println("Fan: OFF");
+  }
+
+  Serial.println("----------");
+  delay(100);
+}
