@@ -1,0 +1,1 @@
+# Smart-Light-and-Temperature-Detecting-System-for-Automated-Classroom-Environment-Management-System
